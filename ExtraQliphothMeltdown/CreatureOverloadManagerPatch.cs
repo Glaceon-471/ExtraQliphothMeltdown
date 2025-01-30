@@ -25,7 +25,6 @@ namespace ExtraQliphothMeltdown
                 return false;
             }
             ExtraQliphothMeltdownManager manager = ExtraQliphothMeltdownManager.Instance;
-            int max = ConfigManager.Instance.OverlappingQliphothMeltdowns;
             List<CreatureModel> list1 = new List<CreatureModel>();
             List<long> list2 = new List<long>(ignoredCreatureMetaId);
             SefiraEnum sefira = SefiraBossManager.Instance.CurrentActivatedSefira;
@@ -57,7 +56,7 @@ namespace ExtraQliphothMeltdown
                     sefira != SefiraEnum.CHOKHMAH
                 ) continue;
 
-                if (!creature.isOverloaded || (creature.isOverloaded && manager[creature].Count < max) || (creature.overloadType == OverloadType.DEFAULT && ignoreDefaultOverload))
+                if (!creature.isOverloaded || (creature.isOverloaded && manager[creature].Count < creature.GetMaxQliphothMeltdowns()) || (creature.overloadType == OverloadType.DEFAULT && ignoreDefaultOverload))
                     list1.Add(creature);
             }
             Dictionary<CreatureModel, int> dict = new Dictionary<CreatureModel, int>();
@@ -69,7 +68,8 @@ namespace ExtraQliphothMeltdown
                 CreatureModel creature = list1[index];
                 if (!list3.Contains(creature)) list3.Add(creature);
                 if (!dict.ContainsKey(creature)) dict[creature] = 0;
-                if (++dict[creature] + manager[creature].Count >= max) list1.RemoveAt(index);
+                if (++dict[creature] + manager[creature].Count >= creature.GetMaxQliphothMeltdowns())
+                    list1.RemoveAt(index);
             }
             manager.ActivateOverload(dict, new ExtraQliphothMeltdownManager.OverloadData(__instance.GetField<int>("qliphothOverloadLevel"), overloadTime, type));
             __result = list3;

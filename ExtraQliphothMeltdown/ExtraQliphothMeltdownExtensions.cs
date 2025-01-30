@@ -8,6 +8,16 @@ namespace ExtraQliphothMeltdown
 {
     public static class ExtraQliphothMeltdownExtensions
     {
+        public static CreatureModel GetCreatureModel(this IsolateRoom room) => room.GetField<CreatureUnit>("_targetUnit").model;
+
+        public static int GetMaxQliphothMeltdowns(this CreatureModel creature)
+        {
+            ConfigManager config = ConfigManager.Instance;
+            if (config.ToolAbnormalityAlsoOverlapping && creature.metaInfo.creatureKitType == CreatureKitType.EQUIP) return 1;
+            if (!config.ToolAbnormalityAlsoOverlapping && creature.metaInfo.creatureKitType != CreatureKitType.NONE) return 1;
+            return config.OverlappingQliphothMeltdowns;
+        }
+
         public static Dictionary<Type, Dictionary<string, FieldInfo>> FieldCache = new Dictionary<Type, Dictionary<string, FieldInfo>>();
 
         public static void SetField(this object obj, string name, object value)
@@ -74,7 +84,5 @@ namespace ExtraQliphothMeltdown
             node = document.SelectSingleNode(xpath);
             return node != null;
         }
-
-        public static CreatureModel GetCreatureModel(this IsolateRoom room) => room.GetField<CreatureUnit>("_targetUnit").model;
     }
 }
