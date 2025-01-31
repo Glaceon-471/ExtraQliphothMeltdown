@@ -1,6 +1,8 @@
-﻿using Harmony;
+﻿using GameStatusUI;
+using Harmony;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using Random = UnityEngine.Random;
 
 namespace ExtraQliphothMeltdown
@@ -9,11 +11,45 @@ namespace ExtraQliphothMeltdown
     {
         public CreatureOverloadManagerPatch(HarmonyInstance instance)
         {
+            instance.Patch<CreatureOverloadManager, CreatureOverloadManagerPatch>(
+                "SetQliphothOverloadLevel",
+                nameof(SetQliphothOverloadLevelPrefix),
+                null
+            );
             instance.Patch(
                 typeof(CreatureOverloadManager).GetMethod(nameof(CreatureOverloadManager.ActivateOverload), AccessTools.all, null, new Type[] { typeof(int), typeof(OverloadType), typeof(float), typeof(bool), typeof(bool), typeof(bool), typeof(long[]) }, null),
                 typeof(CreatureOverloadManagerPatch).GetMethod(nameof(ActivateOverloadPrefix), AccessTools.all),
                 null
             );
+        }
+
+        public static bool SetQliphothOverloadLevelPrefix(CreatureOverloadManager __instance, int level)
+        {
+            __instance.SetField("qliphothOverloadLevel", level);
+            Notice.instance.Send(NoticeName.OnQliphothOverloadLevelChanged, level);
+            int num1 = 0;
+            if (!SefiraBossManager.Instance.IsKetherBoss(KetherBossType.E4))
+            {
+                int num2 = 0;
+                int num3 = 0;
+                CreatureModel[] creatureList = CreatureManager.instance.GetCreatureList();
+                foreach (CreatureModel creatureModel in creatureList)
+                {
+                    if (creatureModel.sefiraOrigin == null || !__instance.GetField<HashSet<SefiraEnum>>("clearedBossMissions").Contains(creatureModel.sefiraOrigin.sefiraEnum))
+                    {
+                        if (creatureModel.GetMaxWorkCount() != 0) num3 += creatureModel.GetMaxQliphothMeltdowns();
+                        num2++;
+                    }
+                }
+                num1 = Mathf.Min(num3, (num2 * level + 9) / 10);
+            }
+            __instance.SetField("qliphothOverloadIsolateNum", num1);
+            EnergyController controller = GameStatusUI.GameStatusUI.Window.energyContorller;
+            controller.SetOverloadLevel(level);
+            controller.SetOverloadIsolateNum(num1);
+            typeof(CreatureOverloadManager).GetMethod("CheckOrdealActivate", AccessTools.all).Invoke(__instance, new object[] { level });
+            controller.SetOverLoadOrdeal(__instance.GetField<OrdealBase>("_nextOrdeal"));
+            return false;
         }
 
         public static bool ActivateOverloadPrefix(CreatureOverloadManager __instance, ref List<CreatureModel> __result, int overloadCount, OverloadType type, float overloadTime, bool ignoreWork = false, bool ignoreBossReward = false, bool ignoreDefaultOverload = false, params long[] ignoredCreatureMetaId)

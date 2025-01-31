@@ -13,6 +13,7 @@ namespace ExtraQliphothMeltdown
         public static int GetMaxQliphothMeltdowns(this CreatureModel creature)
         {
             ConfigManager config = ConfigManager.Instance;
+            if (creature.GetMaxWorkCount() == 0) return 0;
             if (config.ToolAbnormalityAlsoOverlapping && creature.metaInfo.creatureKitType == CreatureKitType.EQUIP) return 1;
             if (!config.ToolAbnormalityAlsoOverlapping && creature.metaInfo.creatureKitType != CreatureKitType.NONE) return 1;
             return config.OverlappingQliphothMeltdowns;
