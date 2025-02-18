@@ -2,6 +2,7 @@
 using Harmony;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -35,11 +36,12 @@ namespace ExtraQliphothMeltdown
                 CreatureModel[] creatureList = CreatureManager.instance.GetCreatureList();
                 foreach (CreatureModel creatureModel in creatureList)
                 {
-                    if (creatureModel.sefiraOrigin == null || !__instance.GetField<HashSet<SefiraEnum>>("clearedBossMissions").Contains(creatureModel.sefiraOrigin.sefiraEnum))
-                    {
-                        if (creatureModel.GetMaxWorkCount() != 0) num3 += creatureModel.GetMaxQliphothMeltdowns();
-                        num2++;
-                    }
+                    if (creatureModel.sefiraOrigin != null) continue;
+                    if (__instance.GetField<HashSet<SefiraEnum>>("clearedBossMissions").Contains(creatureModel.sefiraOrigin.sefiraEnum) &&
+                        !ConfigManager.Instance.IgnoreCoreSuppressionsAlreadyMade)
+                        continue;
+                    if (creatureModel.GetMaxWorkCount() != 0) num3 += creatureModel.GetMaxQliphothMeltdowns();
+                    num2++;
                 }
                 num1 = Mathf.Min(num3, (num2 * level + 9) / 10);
             }
@@ -84,9 +86,11 @@ namespace ExtraQliphothMeltdown
                         continue;
                 }
 
+                else if (creature.sefiraOrigin != null) continue;
+
                 else if (!ignoreBossReward &&
-                    creature.sefiraOrigin != null &&
                     __instance.GetField<HashSet<SefiraEnum>>("clearedBossMissions").Contains(creature.sefiraOrigin.sefiraEnum) &&
+                    !ConfigManager.Instance.IgnoreCoreSuppressionsAlreadyMade &&
                     sefira != SefiraEnum.TIPERERTH1 &&
                     sefira != SefiraEnum.BINAH &&
                     sefira != SefiraEnum.CHOKHMAH

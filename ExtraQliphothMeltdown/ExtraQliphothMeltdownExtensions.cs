@@ -72,7 +72,7 @@ namespace ExtraQliphothMeltdown
             return element;
         }
 
-        public static XmlElement AddElement(this XmlDocument document, XmlNode node, string name, string text)
+        public static XmlElement AddElement(this XmlNode node, XmlDocument document, string name, string text)
         {
             XmlElement element = document.CreateElement(name);
             element.InnerText = text;
@@ -80,7 +80,7 @@ namespace ExtraQliphothMeltdown
             return element;
         }
 
-        public static bool TryGet(this XmlDocument document, string xpath, out XmlNode node)
+        public static bool TryGet(this XmlNode document, string xpath, out XmlNode node)
         {
             node = document.SelectSingleNode(xpath);
             return node != null;
